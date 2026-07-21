@@ -1,6 +1,43 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: serverinv
+      POSTGRES_PASSWORD: serverinv
+      POSTGRES_DB: server_inventory
+    volumes:
+      - server_inventory_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U serverinv -d server_inventory"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "postgresql://serverinv:serverinv@postgres:5432/server_inventory?schema=public"
+    command: ["npx", "prisma", "migrate", "deploy"]
+
   web:
     build: .
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: "postgresql://serverinv:serverinv@postgres:5432/server_inventory?schema=public"
+      ZABBIX_API_URL: "${ZABBIX_API_URL}"
+      ZABBIX_API_TOKEN: "${ZABBIX_API_TOKEN}"
     ports:
       - "3000:3000"
     restart: unless-stopped
+
+volumes:
+  server_inventory_pgdata:
