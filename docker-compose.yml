@@ -19,6 +19,10 @@ services:
       context: .
       dockerfile: Dockerfile
       target: builder
+      args:
+        HTTP_PROXY: "${HTTP_PROXY:-}"
+        HTTPS_PROXY: "${HTTPS_PROXY:-}"
+        NO_PROXY: "${NO_PROXY:-}"
     depends_on:
       postgres:
         condition: service_healthy
@@ -27,7 +31,13 @@ services:
     command: ["npx", "prisma", "migrate", "deploy"]
 
   web:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        HTTP_PROXY: "${HTTP_PROXY:-}"
+        HTTPS_PROXY: "${HTTPS_PROXY:-}"
+        NO_PROXY: "${NO_PROXY:-}"
     depends_on:
       migrate:
         condition: service_completed_successfully
