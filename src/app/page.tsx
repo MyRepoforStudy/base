@@ -1,5 +1,5 @@
 import { getMergedServers } from "@/lib/servers";
-import { getDistro } from "@/lib/constants";
+import { getDistro, describeError } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +17,8 @@ export default async function OverviewPage() {
   try {
     servers = await getMergedServers();
   } catch (e) {
-    error = e instanceof Error ? e.message : "Failed to reach Zabbix";
+    console.error("OverviewPage: getMergedServers failed:", e);
+    error = describeError(e);
   }
 
   const total = servers.length;

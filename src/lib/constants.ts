@@ -20,3 +20,20 @@ export function formatGb(gb: number | null): string {
   if (gb === null) return "—";
   return `${gb.toFixed(1)} GB`;
 }
+
+export function describeError(error: unknown): string {
+  const parts: string[] = [];
+  let current: unknown = error;
+  const seen = new Set<unknown>();
+  while (current && !seen.has(current)) {
+    seen.add(current);
+    if (current instanceof Error) {
+      parts.push(current.message);
+      current = current.cause;
+    } else {
+      parts.push(String(current));
+      break;
+    }
+  }
+  return parts.length > 0 ? parts.join(" <- caused by: ") : "Unknown error";
+}
