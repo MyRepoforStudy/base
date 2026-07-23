@@ -2,6 +2,20 @@
 {% block title %}{{ app_name }}{% endblock %}
 
 {% block content %}
+{% macro sort_th(column, label) %}
+  {% set new_dir = 'desc' if sort == column and sort_dir == 'asc' else 'asc' %}
+  <th>
+    <a
+      href="/?view=hosts&environment={{ (filters.environment or '')|urlencode }}&virtual={{ (active_virtual_filter or '')|urlencode }}&os_family={{ (filters.os_family or '')|urlencode }}&proxmox={{ (filters.proxmox or '')|urlencode }}&system={{ (filters.system or '')|urlencode }}&q={{ (filters.q or '')|urlencode }}&sort={{ column }}&dir={{ new_dir }}"
+      style="color: inherit; text-decoration: none; white-space: nowrap;"
+    >
+      {{ label }}
+      {% if sort == column %}
+        <i class="bi bi-caret-{{ 'up-fill' if sort_dir == 'asc' else 'down-fill' }}"></i>
+      {% endif %}
+    </a>
+  </th>
+{% endmacro %}
 <div class="overview-shell">
   <aside class="overview-sidebar">
     <div class="overview-logo">
@@ -17,6 +31,8 @@
     {% if current_view == "hosts" %}
       <form id="serverFilters" class="overview-filters" action="/" method="get">
         <input type="hidden" name="view" value="{{ current_view }}">
+        <input type="hidden" name="sort" value="{{ sort or '' }}">
+        <input type="hidden" name="dir" value="{{ sort_dir or '' }}">
         <div class="sidebar-caption">Filters</div>
         <label>
           Environment
@@ -87,6 +103,8 @@
           <input type="hidden" name="system" value="{{ filters.system or '' }}">
           <input type="hidden" name="os_family" value="{{ filters.os_family or '' }}">
           <input type="hidden" name="q" value="{{ filters.q or '' }}">
+          <input type="hidden" name="sort" value="{{ sort or '' }}">
+          <input type="hidden" name="dir" value="{{ sort_dir or '' }}">
           <input type="hidden" name="refresh" value="1">
           <button class="btn btn-outline-secondary btn-sm" type="submit">
             <i class="bi bi-arrow-repeat"></i> Refresh Zabbix
@@ -248,18 +266,18 @@
           <table class="table table-sm align-middle table-hover overview-table">
             <thead>
               <tr>
-                <th>Server</th>
-                <th>IP</th>
-                <th>Environment</th>
-                <th>System</th>
-                <th>Proxmox</th>
-                <th>Virtual</th>
-                <th>Vendor</th>
-                <th>Model</th>
-                <th>CPU</th>
-                <th>RAM</th>
-                <th>Operating system</th>
-                <th>Monitoring</th>
+                {{ sort_th('hostname', 'Server') }}
+                {{ sort_th('ip_address', 'IP') }}
+                {{ sort_th('environment', 'Environment') }}
+                {{ sort_th('system', 'System') }}
+                {{ sort_th('proxmox', 'Proxmox') }}
+                {{ sort_th('virtual', 'Virtual') }}
+                {{ sort_th('vendor', 'Vendor') }}
+                {{ sort_th('model', 'Model') }}
+                {{ sort_th('cpu_cores', 'CPU') }}
+                {{ sort_th('ram_gb', 'RAM') }}
+                {{ sort_th('os_name', 'Operating system') }}
+                {{ sort_th('monitoring_status', 'Monitoring') }}
               </tr>
             </thead>
             <tbody>

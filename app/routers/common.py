@@ -123,6 +123,29 @@ def apply_search_filter(hosts: list[Host], q: str | None) -> list[Host]:
     return [host for host in hosts if query in haystack(host)]
 
 
+SORT_COLUMNS: dict[str, object] = {
+    "hostname": lambda host: (host.zabbix_host_name or host.hostname or "").lower(),
+    "ip_address": lambda host: host.ip_address or "",
+    "environment": lambda host: host.environment or "",
+    "system": lambda host: (host.system or "").lower(),
+    "proxmox": lambda host: (host.proxmox or "").lower(),
+    "virtual": lambda host: host.virtual,
+    "vendor": lambda host: (host.vendor or "").lower(),
+    "model": lambda host: (host.model or "").lower(),
+    "cpu_cores": lambda host: host.cpu_cores if host.cpu_cores is not None else -1,
+    "ram_gb": lambda host: host.ram_gb if host.ram_gb is not None else -1,
+    "os_name": lambda host: (host.os_name or "").lower(),
+    "monitoring_status": lambda host: host.monitoring_status or "",
+}
+
+
+def sort_hosts(hosts: list[Host], sort: str | None, sort_dir: str | None) -> list[Host]:
+    key = SORT_COLUMNS.get(sort or "")
+    if key is None:
+        return hosts
+    return sorted(hosts, key=key, reverse=(sort_dir == "desc"))
+
+
 def support_status_label(support_end_date: date | None) -> str:
     if support_end_date is None:
         return "not set"

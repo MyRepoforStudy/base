@@ -15,6 +15,7 @@ from app.routers.common import (
     get_filter_options,
     normalized_virtual_filter,
     os_family_label,
+    sort_hosts,
     support_status_label,
 )
 from app.services.zabbix_refresh import maybe_refresh_zabbix_cache
@@ -33,6 +34,8 @@ def dashboard(
     system: str | None = None,
     os_family: str | None = None,
     q: str | None = None,
+    sort: str | None = None,
+    dir: str = "asc",
     refresh: bool = False,
     db: Session = Depends(get_db),
 ):
@@ -84,6 +87,8 @@ def dashboard(
     filtered_hosts = db.scalars(hosts_stmt).all()
     filtered_hosts = apply_os_family_filter(filtered_hosts, os_family)
     filtered_hosts = apply_search_filter(filtered_hosts, q)
+    sort_dir = "desc" if dir == "desc" else "asc"
+    filtered_hosts = sort_hosts(filtered_hosts, sort, sort_dir)
 
     os_family_options = sorted({os_family_label(host.os_name) for host in all_hosts})
 
@@ -123,6 +128,8 @@ def dashboard(
             "filters": filters,
             "filter_options": filter_options,
             "active_virtual_filter": normalized_virtual_filter(virtual),
+            "sort": sort,
+            "sort_dir": sort_dir,
             "chart_data": chart_data,
         },
     )
