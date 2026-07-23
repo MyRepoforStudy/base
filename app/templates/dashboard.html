@@ -15,13 +15,9 @@
     </div>
 
     {% if current_view == "hosts" %}
-      <form class="overview-filters" action="/" method="get">
+      <form id="serverFilters" class="overview-filters" action="/" method="get">
         <input type="hidden" name="view" value="{{ current_view }}">
         <div class="sidebar-caption">Filters</div>
-        <label>
-          Search
-          <input class="form-control form-control-sm" type="text" name="q" value="{{ filters.q or '' }}" placeholder="hostname, IP, vendor...">
-        </label>
         <label>
           Environment
           <select class="form-select form-select-sm" name="environment">
@@ -234,6 +230,18 @@
       <section class="overview-panel">
         <div class="overview-section-heading">
           <h2>Server Summary</h2>
+          <div class="d-flex align-items-center gap-2">
+            <input
+              class="form-control form-control-sm"
+              type="search"
+              name="q"
+              form="serverFilters"
+              value="{{ filters.q or '' }}"
+              placeholder="Search hostname, IP, vendor..."
+              style="min-width: 220px;"
+            >
+            <button class="btn btn-primary btn-sm" type="submit" form="serverFilters"><i class="bi bi-search"></i></button>
+          </div>
           <span>{{ hosts|length }} records</span>
         </div>
         <div class="table-responsive">
